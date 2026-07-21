@@ -74,24 +74,25 @@ export const uploadAvatar = async (req, res) => {
       });
     }
 
-    const result = await userService.uploadAvatar(
+    const avatar = await userService.uploadAvatar(
       req.params.id,
       req.file
     );
 
-    if (result.matchedCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
     res.status(200).json({
       success: true,
       message: "Avatar uploaded successfully.",
+      avatar,
     });
   } catch (err) {
     console.error("Upload Avatar Error:", err);
+
+    if (err.message === "User not found.") {
+      return res.status(404).json({
+        success: false,
+        message: err.message,
+      });
+    }
 
     res.status(500).json({
       success: false,
@@ -112,24 +113,25 @@ export const uploadBanner = async (req, res) => {
       });
     }
 
-    const result = await userService.uploadBanner(
+    const banner = await userService.uploadBanner(
       req.params.id,
       req.file
     );
 
-    if (result.matchedCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
     res.status(200).json({
       success: true,
       message: "Banner uploaded successfully.",
+      banner,
     });
   } catch (err) {
     console.error("Upload Banner Error:", err);
+
+    if (err.message === "User not found.") {
+      return res.status(404).json({
+        success: false,
+        message: err.message,
+      });
+    }
 
     res.status(500).json({
       success: false,
@@ -145,15 +147,17 @@ export const getAvatar = async (req, res) => {
   try {
     const user = await userService.getAvatar(req.params.id);
 
-    if (!user?.avatar?.data) {
+    if (!user?.avatar?.url) {
       return res.status(404).json({
         success: false,
         message: "Avatar not found.",
       });
     }
 
-    res.set("Content-Type", user.avatar.contentType);
-    res.send(user.avatar.data);
+    res.status(200).json({
+      success: true,
+      avatar: user.avatar,
+    });
   } catch (err) {
     console.error("Get Avatar Error:", err);
 
@@ -171,15 +175,17 @@ export const getBanner = async (req, res) => {
   try {
     const user = await userService.getBanner(req.params.id);
 
-    if (!user?.banner?.data) {
+    if (!user?.banner?.url) {
       return res.status(404).json({
         success: false,
         message: "Banner not found.",
       });
     }
 
-    res.set("Content-Type", user.banner.contentType);
-    res.send(user.banner.data);
+    res.status(200).json({
+      success: true,
+      banner: user.banner,
+    });
   } catch (err) {
     console.error("Get Banner Error:", err);
 

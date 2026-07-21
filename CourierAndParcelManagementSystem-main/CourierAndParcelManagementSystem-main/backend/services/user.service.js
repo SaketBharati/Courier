@@ -1,5 +1,9 @@
 import { usersCollection } from "../db/mongo.js";
 import { ObjectId } from "mongodb";
+import {
+  uploadImage,
+  deleteImage,
+} from "../utils/cloudinaryUpload.js";
 
 // =====================================
 // Get User By Email
@@ -19,12 +23,15 @@ export async function getUserByEmail(email) {
 // Update User
 // =====================================
 export async function updateUser(email, updateData) {
-  updateData.updatedAt = new Date();
+  const data = {
+    ...updateData,
+    updatedAt: new Date(),
+  };
 
   return usersCollection.updateOne(
     { email },
     {
-      $set: updateData,
+      $set: data,
     }
   );
 }
@@ -33,36 +40,78 @@ export async function updateUser(email, updateData) {
 // Upload Avatar
 // =====================================
 export async function uploadAvatar(userId, file) {
-  return usersCollection.updateOne(
+  const user = await usersCollection.findOne({
+    _id: new ObjectId(userId),
+  });
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  // Delete previous avatar if it exists
+  if (user.avatar?.public_id) {
+    await deleteImage(user.avatar.public_id);
+  }
+
+  // Upload new avatar
+  const uploaded = await uploadImage(file, "avatars");
+
+  await usersCollection.updateOne(
     { _id: new ObjectId(userId) },
     {
       $set: {
         avatar: {
-          data: file.buffer,
-          contentType: file.mimetype,
+          public_id: uploaded.public_id,
+          url: uploaded.secure_url,
         },
         updatedAt: new Date(),
       },
     }
   );
+
+  return {
+    public_id: uploaded.public_id,
+    url: uploaded.secure_url,
+  };
 }
 
 // =====================================
 // Upload Banner
 // =====================================
 export async function uploadBanner(userId, file) {
-  return usersCollection.updateOne(
+  const user = await usersCollection.findOne({
+    _id: new ObjectId(userId),
+  });
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  // Delete previous banner if it exists
+  if (user.banner?.public_id) {
+    await deleteImage(user.banner.public_id);
+  }
+
+  // Upload new banner
+  const uploaded = await uploadImage(file, "banners");
+
+  await usersCollection.updateOne(
     { _id: new ObjectId(userId) },
     {
       $set: {
         banner: {
-          data: file.buffer,
-          contentType: file.mimetype,
+          public_id: uploaded.public_id,
+          url: uploaded.secure_url,
         },
         updatedAt: new Date(),
       },
     }
   );
+
+  return {
+    public_id: uploaded.public_id,
+    url: uploaded.secure_url,
+  };
 }
 
 // =====================================

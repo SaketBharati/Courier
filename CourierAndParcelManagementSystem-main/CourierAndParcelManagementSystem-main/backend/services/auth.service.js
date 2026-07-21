@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { usersCollection } from "../db/mongo.js";
 import { hashPassword, comparePassword } from "../utils/password.js";
+import AppError from "../utils/AppError.js";
 
 // ==============================
 // Register User
@@ -11,7 +12,7 @@ export async function registerUser(userData) {
   });
 
   if (existingUser) {
-    throw new Error("User already exists");
+    throw new AppError("User already exists");
   }
 
   const newUser = {
@@ -43,7 +44,7 @@ export async function loginUser({ email, password }) {
   });
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password");
   }
 
   const isPasswordCorrect = await comparePassword(
@@ -52,11 +53,11 @@ export async function loginUser({ email, password }) {
   );
 
   if (!isPasswordCorrect) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password");
   }
 
   if (user.status !== "active") {
-    throw new Error("Your account has been blocked.");
+    throw new AppError("Your account has been blocked.");
   }
 
   const payload = {

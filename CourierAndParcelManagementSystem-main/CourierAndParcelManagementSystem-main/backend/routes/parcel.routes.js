@@ -1,6 +1,6 @@
 import express from "express";
 import verifyToken from "../middlewares/verifyToken.js";
-import verifyCustomer from "../middlewares/verifyCustomer.js";
+import verifyCustomer from "../middlewares/verifyRole.js";
 import * as parcelController from "../controllers/parcel.controller.js";
 
 const router = express.Router();
