@@ -34,7 +34,7 @@ router.put(
 router.post(
   "/avatar/:id",
   verifyToken,
-  uploadAvatar.single("avatar"),
+  uploadAvatar,
   userController.uploadAvatar
 );
 
@@ -52,7 +52,7 @@ router.get(
 router.post(
   "/banner/:id",
   verifyToken,
-  uploadBanner.single("banner"),
+  uploadBanner,
   userController.uploadBanner
 );
 
