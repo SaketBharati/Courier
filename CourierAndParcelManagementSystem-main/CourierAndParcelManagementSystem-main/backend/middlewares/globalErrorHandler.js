@@ -1,51 +1,47 @@
 const globalErrorHandler = (err, req, res, next) => {
-    err.statusCode = err.statusCode || 500;
-    err.status = err.status || "error";
+  const statusCode = err.statusCode || 500;
 
-    //? 🔹 Development: full error
-    if (process.env.NODE_ENV === "development") {
-        return res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message,
-            stack: err.stack,
-            error: err,
-        });
-    }
-
-    //? 🔹 Production: safe response
-    if (process.env.NODE_ENV === "production") {
-        //? Operational error (trusted)
-        if (err.isOperational) {
-            return res.status(err.statusCode).json({
-                status: err.status,
-                message: err.message,
-            });
-        }
-
-        //? Programming or unknown error
-        console.error("🔥 ERROR:", err);
-
-        return res.status(500).json({
-            status: "error",
-            message: "Something went wrong!",
-        });
-    }
-
-    //? 🔹 Database error
-    if (err.name === "MongoServerError") {
-        return res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message,
-        });
-    }
-
-    //? 🔹 Programming or unknown error
-    console.error("🔥 ERROR:", err);
-
-    return res.status(500).json({
-        status: "error",
-        message: "Something went wrong!",
+  // MongoDB Errors
+  if (err.name === "MongoServerError") {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
     });
+  }
+
+  // JWT Errors
+  if (err.name === "JsonWebTokenError") {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid token.",
+    });
+  }
+
+  if (err.name === "TokenExpiredError") {
+    return res.status(401).json({
+      success: false,
+      message: "Token has expired.",
+    });
+  }
+
+  // Development
+  if (process.env.NODE_ENV === "development") {
+    return res.status(statusCode).json({
+      success: false,
+      message: err.message,
+      stack: err.stack,
+    });
+  }
+
+  // Production
+  console.error(err);
+
+  return res.status(statusCode).json({
+    success: false,
+    message: err.isOperational
+      ? err.message
+      : "Internal server error.",
+  });
 };
 
 export default globalErrorHandler;

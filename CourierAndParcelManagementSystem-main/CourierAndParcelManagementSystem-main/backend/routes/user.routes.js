@@ -1,83 +1,65 @@
-// import express from "express";
-// import verifyToken from "../middlewares/verifyToken.js";
-// import { verifyRole } from "../middlewares/verifyRole.js";
-// import { registerUser, loginUser, getUserInfo } from "../controllers/user.controller.js";
-
-// const router = express.Router();
-
-// router.post("/registration", registerUser);
-// router.post("/login", loginUser);
-// router.get("/get-user", verifyToken, getUserInfo);
-
-// export default router;
-
 import express from "express";
 import verifyToken from "../middlewares/verifyToken.js";
 import * as userController from "../controllers/user.controller.js";
-import upload from "../config/multer.js"; // your memoryStorage multer
 import {
-  getUser,
-  updateUser,
   uploadAvatar,
   uploadBanner,
-  getAvatar,
-  getBanner,
-} from "../controllers/user.controller.js";
+} from "../config/multer.js";
 
 const router = express.Router();
 
-// User routes
-router.get("/get-user", verifyToken, userController.getUser);
-router.put("/update-user/:email", verifyToken, userController.updateUser);
-router.patch("/:id/avatar", verifyToken, userController.uploadAvatar);
-router.patch("/:id/banner", verifyToken, userController.uploadBanner);
-router.get("/:id/avatar", verifyToken, userController.getAvatar);
-router.get("/:id/banner", verifyToken, userController.getBanner);
+// =====================================
+// User Profile
+// =====================================
 
-//* ------------------------------
-//* Get current user info
-//* GET /users/me
-//* ------------------------------
-router.get("/me", verifyToken, getUser);
+// Get current logged-in user
+router.get(
+  "/me",
+  verifyToken,
+  userController.getUser
+);
 
-//* ------------------------------
-//* Update user info
-//* PUT /users/:email
-//* ------------------------------
-router.put("/:email", verifyToken, updateUser);
+// Update user profile
+router.put(
+  "/:email",
+  verifyToken,
+  userController.updateUser
+);
 
-//* ------------------------------
-//* Upload avatar
-//* POST /users/avatar/:id
-//* ------------------------------
+// =====================================
+// Avatar
+// =====================================
+
+// Upload avatar
 router.post(
   "/avatar/:id",
   verifyToken,
-  upload.single("avatar"), // expects field name "avatar"
-  uploadAvatar
+  uploadAvatar.single("avatar"),
+  userController.uploadAvatar
 );
 
-//* ------------------------------
-//* Upload banner
-//* POST /users/banner/:id
-//* ------------------------------
+// Get avatar
+router.get(
+  "/avatar/:id",
+  userController.getAvatar
+);
+
+// =====================================
+// Banner
+// =====================================
+
+// Upload banner
 router.post(
   "/banner/:id",
   verifyToken,
-  upload.single("banner"), // expects field name "banner"
-  uploadBanner
+  uploadBanner.single("banner"),
+  userController.uploadBanner
 );
 
-//* ------------------------------
-//* Get avatar
-//* GET /users/avatar/:id
-//* ------------------------------
-router.get("/avatar/:id", getAvatar);
-
-//* ------------------------------
-//* Get banner
-//* GET /users/banner/:id
-//* ------------------------------
-router.get("/banner/:id", getBanner);
+// Get banner
+router.get(
+  "/banner/:id",
+  userController.getBanner
+);
 
 export default router;

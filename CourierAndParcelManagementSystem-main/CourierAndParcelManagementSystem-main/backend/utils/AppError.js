@@ -1,15 +1,18 @@
-//* Custom Error Class (for API errors)
+/**
+ * Custom Error Class
+ * Used for operational errors throughout the application.
+ */
 
 class AppError extends Error {
-    constructor(message, statusCode) {
-        super(message);
+  constructor(message = "Something went wrong", statusCode = 500) {
+    super(message);
 
-        this.statusCode = statusCode;
-        this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
-        this.isOperational = true;
+    this.statusCode = statusCode;
+    this.status = statusCode >= 400 && statusCode < 500 ? "fail" : "error";
+    this.isOperational = true;
 
-        Error.captureStackTrace(this, this.constructor);
-    }
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
 
 export default AppError;

@@ -1,18 +1,15 @@
 import express from "express";
-import {
-  login,
-  register,
-  refreshToken,
-  createJWT,
-  logout
-} from "../controllers/auth.controller.js";
+import * as authController from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/jwt", createJWT);
-router.post("/refresh", refreshToken);
-router.get("/logout", logout);
+// =====================================
+// Public Authentication Routes
+// =====================================
+router.post("/register", authController.register);
+router.post("/login", authController.login);
+router.post("/jwt", authController.createJWT);
+router.post("/refresh", authController.refreshToken);
+router.post("/logout", authController.logout);
 
 export default router;

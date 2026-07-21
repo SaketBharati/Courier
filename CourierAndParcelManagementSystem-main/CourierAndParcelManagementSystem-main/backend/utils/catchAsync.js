@@ -1,17 +1,17 @@
-//* Global Async Error Wrapper (to avoid try/catch everywhere)
+/**
+ * Async Error Wrapper
+ *
+ * Wraps async route handlers and forwards any errors
+ * to the global error handling middleware.
+ *
+ * Usage:
+ * router.get("/", catchAsync(controller.getUsers));
+ */
 
 const catchAsync = (fn) => {
-    return (req, res, next) => {
-        fn(req, res, next).catch(next);
-    };
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 };
 
 export default catchAsync;
-
-/*
-//*Example usage:
-export const getUser = catchAsync(async (req, res, next) => {
-  //? throw new AppError("User not found", 404);
-  //? next(new AppError("User not found", 404));
-});
-*/

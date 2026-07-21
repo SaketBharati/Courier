@@ -1,28 +1,16 @@
 import { Parser } from "json2csv";
-import fs from "fs";
 
-export const exportToCSV = (data, fileName) => {
-  const parser = new Parser();
-  const csv = parser.parse(data);
+/**
+ * Convert JSON data to CSV.
+ *
+ * @param {Array<Object>} data - Array of objects to convert.
+ * @param {Array<string>} fields - Optional list of fields to include.
+ * @returns {string} CSV string.
+ */
+export const exportToCSV = (data, fields = []) => {
+  const parser = new Parser(
+    fields.length ? { fields } : {}
+  );
 
-  fs.writeFileSync(fileName, csv, "utf-8");
-  return fileName;
+  return parser.parse(data);
 };
-
-/*
-//! how to use
-import { exportToCSV } from "../utils/csvExporter.js";
-
-const data = await usersCollection.find().toArray();
-const file = exportToCSV(data, "users.csv");
-res.download(file);
-
-*/
-
-  // import { Parser } from "json2csv";
-  
-  // export function exportToCSV(parcels, res) {
-  //   const parser = new Parser();
-  //   const csv = parser.parse(parcels);
-  //   res.attachment("parcels.csv").send(csv);
-  // }

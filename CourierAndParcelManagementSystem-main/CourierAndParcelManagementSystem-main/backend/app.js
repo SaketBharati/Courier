@@ -1,80 +1,81 @@
+import dotenv from "dotenv";
+dotenv.config();
 
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 
-//* Routers
+// =====================================
+// Config
+// =====================================
+import corsOptions from "./config/cors.js";
+
+// =====================================
+// Routes
+// =====================================
+import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import agentRoutes from "./routes/agent.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import parcelRoutes from "./routes/parcel.routes.js";
 
-//* Middlewares
-import verifyToken from "./middlewares/verifyToken.js";
+// =====================================
+// Middlewares
+// =====================================
 import globalErrorHandler from "./middlewares/globalErrorHandler.js";
 
-//* Utils
+// =====================================
+// Utils
+// =====================================
 import AppError from "./utils/AppError.js";
-
-//* DB connection
-import { MongoClient, ServerApiVersion } from "mongodb";
-dotenv.config();
 
 const app = express();
 
-//* ----------------------------
-//* Middleware
-//* ----------------------------
-app.use(cors());
-app.use(express.json()); //? body parser
+// =====================================
+// Global Middlewares
+// =====================================
 
-//* ----------------------------
-//* Routes
-//* ----------------------------
-app.use("/api/admin", adminRoutes);      //? Admin-only routes
-app.use("/api/agent", agentRoutes);      //? Delivery Agent routes
-app.use("/api/user", userRoutes);        //? Registration / Login / Profile
-app.use("/api/parcels", parcelRoutes);   //? Parcel-related routes
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-//* ----------------------------
-//* Health check / default route
-//* ----------------------------
-app.get("/", (_, res) => {
-  res.send({ message: "🚀 Server is running!" });
+// =====================================
+// API Routes
+// =====================================
+
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/agent", agentRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/parcels", parcelRoutes);
+
+// =====================================
+// Health Check
+// =====================================
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "🚀 Courier Management API is running.",
+  });
 });
 
-//* ----------------------------
-//* 404 Handler
-//* ----------------------------
-// app.use((_, res) => {
-//   res.status(404).json({ message: "Route not found!" });
-// });
+// =====================================
+// 404 Handler
+// =====================================
 
-//* ----------------------------
-//* Catch all routes (/*)
-//* ----------------------------
 app.all("*", (req, res, next) => {
   next(
     new AppError(
-      `Can't find ${req.originalUrl} on this server`,
+      `Can't find ${req.originalUrl} on this server.`,
       404
     )
   );
 });
 
+// =====================================
+// Global Error Handler
+// =====================================
 
-//* ----------------------------
-//* Error Handler
-//* ----------------------------
-// app.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   res.status(500).json({ message: "Internal server error", error: err.message });
-// });
-
-//* ----------------------------
-//* Global Error Handler
-//* ----------------------------
 app.use(globalErrorHandler);
-
 
 export default app;

@@ -1,28 +1,54 @@
 import * as authService from "../services/auth.service.js";
 import jwt from "jsonwebtoken";
 
+// ==================================
+// Register
+// ==================================
 export const register = async (req, res) => {
-  const result = await authService.registerUser(req.body);
-  res.send(result);
+  try {
+    const result = await authService.registerUser(req.body);
+
+    res.status(201).json(result);
+  } catch (err) {
+    console.error("Register Error:", err);
+
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
+// ==================================
+// Login
+// ==================================
 export const login = async (req, res) => {
-  const data = await authService.loginUser(req.body, req);
-  res.send(data);
+  try {
+    const result = await authService.loginUser(req.body);
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Login Error:", err);
+
+    res.status(401).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
-//* ==================================
-//* Refresh Token to Access Token
-//* ==================================
-
+// ==================================
+// Refresh Token
+// ==================================
 export const refreshToken = (req, res) => {
   try {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: Refresh token is missing!" });
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token is missing.",
+      });
     }
 
     jwt.verify(
@@ -30,48 +56,78 @@ export const refreshToken = (req, res) => {
       process.env.JWT_REFRESH_SECRET,
       (error, decoded) => {
         if (error) {
-          return res.status(403).json({ message: "Invalid refresh token." });
+          return res.status(403).json({
+            success: false,
+            message: "Invalid refresh token.",
+          });
         }
 
-        const { id, email, role } = decoded;
+        const payload = {
+          id: decoded.id,
+          email: decoded.email,
+          role: decoded.role,
+        };
 
-        const payload = { id, email, role };
-
-        const newAccessToken = jwt.sign(
+        const accessToken = jwt.sign(
           payload,
           process.env.JWT_ACCESS_SECRET,
           {
-            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "30d"
+            expiresIn:
+              process.env.JWT_ACCESS_EXPIRES_IN || "30d",
           }
         );
 
-        res.status(200).json({
+        return res.status(200).json({
+          success: true,
           message: "Access token refreshed successfully.",
-          accessToken: newAccessToken
+          accessToken,
         });
       }
     );
   } catch (err) {
-    console.error("Refresh token error:", err);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: err?.message });
+    console.error("Refresh Token Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
+// ==================================
+// Create JWT
+// ==================================
 export const createJWT = (req, res) => {
-  const user = req.body;
+  try {
+    const token = jwt.sign(
+      req.body,
+      process.env.JWT_ACCESS_SECRET,
+      {
+        expiresIn:
+          process.env.JWT_ACCESS_EXPIRES_IN || "30d",
+      }
+    );
 
-  const token = jwt.sign(
-    user,
-    process.env.JWT_ACCESS_SECRET,
-    { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN }
-  );
+    res.status(200).json({
+      success: true,
+      token,
+    });
+  } catch (err) {
+    console.error("JWT Creation Error:", err);
 
-  res.json({ token });
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate token.",
+    });
+  }
 };
 
+// ==================================
+// Logout
+// ==================================
 export const logout = (req, res) => {
-  // JWT is stateless, logout is client-side
-  res.json({ success: true });
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully.",
+  });
 };

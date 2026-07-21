@@ -1,27 +1,23 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import app from "./app.js";
 import { connectDB } from "./db/mongo.js";
 
-const port = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000;
 
-// app.listen(port, () => {
-//   console.log(`Server running on port ${port}`);
-// });
+const startServer = async () => {
+  try {
+    await connectDB();
 
-(async () => {
-  await connectDB();
+    app.listen(PORT, () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server");
+    console.error(error);
+    process.exit(1);
+  }
+};
 
-  app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
-})();
-
-/** Notes
- * This is called an Immediately Invoked Async Function Expression (usually shortened to async IIFE).
- * Another way: 
- * async function startServer() {
-      await connectDB();
-      app.listen(port);
-    }
-
-    startServer();
- */
+startServer();

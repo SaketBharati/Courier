@@ -1,9 +1,7 @@
 import cors from "cors";
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  // add production URLs later
-  // "https://yourdomain.com"
+    process.env.CLIENT_URL
 ];
 
 const corsOptions = {

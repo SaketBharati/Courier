@@ -1,151 +1,156 @@
-import { usersCollection, parcelsCollection } from "../db/mongo.js";
-import { ObjectId } from "mongodb";
+import * as adminService from "../services/admin.service.js";
 
-//* Get all users
+// =====================================
+// Get All Users
+// =====================================
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await usersCollection.find({}, { projection: { password: 0 } }).toArray();
-    res.send(users);
+    const users = await adminService.getAllUsers();
+
+    res.status(200).json({
+      success: true,
+      users,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Server error" });
+    console.error("Get Users Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
-//* Get all parcels
+// =====================================
+// Get All Parcels
+// =====================================
 export const getAllParcels = async (req, res) => {
   try {
-    const parcels = await parcelsCollection.find().toArray();
-    res.send(parcels);
+    const parcels = await adminService.getAllParcels();
+
+    res.status(200).json({
+      success: true,
+      parcels,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Server error" });
+    console.error("Get Parcels Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
-//* Update user role/status
+// =====================================
+// Update User By Admin
+// =====================================
 export const updateUserByAdmin = async (req, res) => {
   try {
-    const userId = req.params.id;
-    const { role, status, statusChangeReason, statusChangedBy } = req.body;
+    const { id } = req.params;
+    const {
+      role,
+      status,
+      statusChangeReason,
+      statusChangedBy,
+    } = req.body;
 
-    if (!statusChangeReason && !statusChangedBy)
-      return res.status(400).json({ message: "No reason specified." });
+    if (!statusChangeReason || !statusChangedBy) {
+      return res.status(400).json({
+        success: false,
+        message: "Status change reason and changed by are required.",
+      });
+    }
 
-    const result = await usersCollection.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: { role, status, statusUpdatedByAdmin: new Date(), statusChangeReason, statusChangedBy } }
+    const result = await adminService.updateUserByAdmin(
+      id,
+      role,
+      status,
+      statusChangeReason,
+      statusChangedBy
     );
 
-    if (result.matchedCount === 0) return res.status(404).json({ message: "User not found" });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
 
-    res.status(200).json({ success: true, modifiedCount: result.modifiedCount, result });
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully.",
+      modifiedCount: result.modifiedCount,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Server error" });
+    console.error("Update User Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
-//* Assign agent to parcel
+// =====================================
+// Assign Agent To Parcel
+// =====================================
 export const assignAgentToParcel = async (req, res) => {
   try {
     const { id } = req.params;
     const { agentEmail } = req.body;
 
-    const result = await parcelsCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { agentEmail, status: "Assigned" } }
+    if (!agentEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Agent email is required.",
+      });
+    }
+
+    const result = await adminService.assignAgentToParcel(
+      id,
+      agentEmail
     );
 
-    res.send(result);
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Parcel not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Agent assigned successfully.",
+      modifiedCount: result.modifiedCount,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Server error" });
+    console.error("Assign Agent Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
-/*
-import { usersCollection, parcelsCollection } from "../db/mongo.js";
-import { ObjectId } from "mongodb";
-
-export const getAllUsers = async (req, res) => {
-    try {
-        const users = await usersCollection.find({}, { projection: { password: 0 } }).toArray();
-        res.json(users);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-export const getAllParcels = async (req, res) => {
-    try {
-        const parcels = await parcelsCollection.find().toArray();
-        res.json(parcels);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
+// =====================================
+// Dashboard Metrics
+// =====================================
 export const getDashboardMetrics = async (req, res) => {
-    try {
-        const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  try {
+    const metrics = await adminService.getDashboardMetrics();
 
-        const totalParcels = await parcelsCollection.countDocuments();
-        const dailyBookings = await parcelsCollection.countDocuments({ createdAt: { $gte: todayStart } });
-        const failedDeliveries = await parcelsCollection.countDocuments({ status: "Failed" });
+    res.status(200).json({
+      success: true,
+      ...metrics,
+    });
+  } catch (err) {
+    console.error("Dashboard Metrics Error:", err);
 
-        const codParcels = await parcelsCollection.find({ paymentType: "COD" }).toArray();
-        const codNumber = codParcels.length;
-        const codAmount = codParcels.reduce((total, parcel) => total + (parcel.price || 0), 0);
-
-        res.json({ totalParcels, dailyBookings, failedDeliveries, codNumber, codAmount });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
 };
-
-export const updateUserData = async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const { role, status, statusChangeReason, statusChangedBy } = req.body;
-
-        if (!statusChangeReason && !statusChangedBy) {
-            return res.status(400).json({ message: "No reason specified" });
-        }
-
-        const result = await usersCollection.updateOne(
-            { _id: new ObjectId(userId) },
-            { $set: { role, status, statusUpdatedByAdmin: new Date(), statusChangeReason, statusChangedBy } }
-        );
-
-        if (result.matchedCount === 0) return res.status(404).json({ message: "User not found" });
-
-        res.json({ success: true, modifiedCount: result.modifiedCount });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-export const assignAgent = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { agentEmail } = req.body;
-
-        const result = await parcelsCollection.updateOne(
-            { _id: new ObjectId(id) },
-            { $set: { agentEmail, status: "Assigned" } }
-        );
-
-        res.json(result);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
- */

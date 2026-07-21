@@ -1,127 +1,79 @@
-import { parcelsCollection } from "../db/mongo.js";
-import { ObjectId } from "mongodb";
+import * as parcelService from "../services/parcel.service.js";
 
-//* Create parcel (Customer only)
+// =====================================
+// Create Parcel
+// =====================================
 export const createParcel = async (req, res) => {
   try {
-    const parcel = req.body;
-    parcel.status = "Pending";
-    parcel.createdAt = new Date();
-    parcel.customerEmail = req.decoded.email;
+    const result = await parcelService.createParcel(
+      req.body,
+      req.decoded.email
+    );
 
-    const result = await parcelsCollection.insertOne(parcel);
-    res.send(result);
+    res.status(201).json({
+      success: true,
+      message: "Parcel created successfully.",
+      insertedId: result.insertedId,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Parcel creation failed" });
+    console.error("Create Parcel Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Parcel creation failed.",
+    });
   }
 };
 
-//* Get parcel by ID
+// =====================================
+// Get Parcel By ID
+// =====================================
 export const getParcelById = async (req, res) => {
   try {
-    const parcel = await parcelsCollection.findOne({ _id: new ObjectId(req.params.id) });
-    if (!parcel) return res.status(404).send({ message: "Parcel not found" });
-    res.send(parcel);
+    const parcel = await parcelService.getParcelById(
+      req.params.id
+    );
+
+    if (!parcel) {
+      return res.status(404).json({
+        success: false,
+        message: "Parcel not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      parcel,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Server error" });
+    console.error("Get Parcel Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
-//* Get bookings of a customer
+// =====================================
+// Get My Bookings
+// =====================================
 export const getMyBookings = async (req, res) => {
   try {
-    const parcels = await parcelsCollection.find({ customerEmail: req.decoded.email }).toArray();
-    res.send(parcels);
+    const parcels = await parcelService.getCustomerBookings(
+      req.decoded.email
+    );
+
+    res.status(200).json({
+      success: true,
+      parcels,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Server error" });
+    console.error("Get My Bookings Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
-
-/*
-import { parcelsCollection } from "../db/mongo.js";
-import { ObjectId } from "mongodb";
-
-export const createParcel = async (req, res) => {
-    try {
-        const parcel = req.body;
-        parcel.status = "Pending";
-        parcel.createdAt = new Date();
-        parcel.customerEmail = req.decoded.email;
-
-        const result = await parcelsCollection.insertOne(parcel);
-        res.json(result);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-export const getMyBookings = async (req, res) => {
-    try {
-        const email = req.decoded.email;
-        const bookings = await parcelsCollection.find({ customerEmail: email }).toArray();
-        res.json(bookings);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-export const getParcelById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const parcel = await parcelsCollection.findOne({ _id: new ObjectId(id) });
-        if (!parcel) return res.status(404).json({ message: "Parcel not found" });
-        res.json(parcel);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-export const trackParcel = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { email, role } = req.decoded;
-
-        let query = { _id: new ObjectId(id) };
-        if (role === "Customer") query.customerEmail = email;
-        if (role === "Delivery Agent") query.agentEmail = email;
-
-        const parcel = await parcelsCollection.findOne(query);
-        if (!parcel) return res.status(404).json({ message: "Parcel not found or access denied" });
-
-        const response = {
-            id: parcel._id,
-            status: parcel.status,
-            currentLocation: parcel.currentLocation || null,
-            trackingHistory: parcel.trackingHistory || [],
-            assignedAgent: parcel.agentEmail || null,
-            customerEmail: parcel.customerEmail || null,
-            createdAt: parcel.createdAt,
-            deliveryDate: parcel.deliveryDate || null
-        };
-
-        if (role === "Admin") {
-            response.parcelType = parcel.parcelType || null;
-            response.size = parcel.size || null;
-            response.price = parcel.price || null;
-            response.paymentType = parcel.paymentType || null;
-            response.deliveryInstructions = parcel.deliveryInstructions || null;
-            response.contact = parcel.contact || null;
-            response.pickupAddress = parcel.pickupAddress || null;
-            response.deliveryAddress = parcel.deliveryAddress || null;
-            response.barcode = parcel.barcode || null;
-        }
-
-        res.json(response);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-*/
