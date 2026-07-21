@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
+  
   FormField,
   FormItem,
   FormLabel,
@@ -18,16 +18,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+
 import { useAuthStore } from "@/store/useAuthStore";
 import LoadingPage from "../shared/loading/LoadingPage";
 
 //* Extending JwtPayload
-interface CustomJwtPayload extends JwtPayload {
-  id: string;
-  role: "Admin" | "Customer" | "Delivery Agent";
-  email: string;
-}
+
 
 //* Validation schema
 const FormSchema = z.object({
