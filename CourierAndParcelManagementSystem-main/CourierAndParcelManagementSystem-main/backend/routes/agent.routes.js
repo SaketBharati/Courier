@@ -1,6 +1,6 @@
 import express from "express";
 import verifyToken from "../middlewares/verifyToken.js";
-import verifyAgent from "../middlewares/verifyRole.js";
+import {verifyAgent} from "../middlewares/verifyRole.js";
 import * as agentController from "../controllers/agent.controller.js";
 
 const router = express.Router();

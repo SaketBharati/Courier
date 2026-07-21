@@ -22,4 +22,4 @@ export const verifyRole = (role) => {
 //? Usage:
 export const verifyAdmin = verifyRole("Admin");
 export const verifyCustomer = verifyRole("Customer");
-export const verifyDeliveryAgent = verifyRole("Delivery Agent");
+export const verifyAgent = verifyRole("Delivery Agent");
