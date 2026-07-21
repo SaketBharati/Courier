@@ -63,7 +63,7 @@ app.get("/", (req, res) => {
 // 404 Handler
 // =====================================
 
-app.all("*", (req, res, next) => {
+app.all("/{*splat}", (req, res, next) => {
   next(
     new AppError(
       `Can't find ${req.originalUrl} on this server.`,
