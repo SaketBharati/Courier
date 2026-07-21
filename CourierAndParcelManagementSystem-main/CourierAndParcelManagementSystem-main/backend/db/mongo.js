@@ -6,7 +6,7 @@ if (!DB_USER || !DB_PASS || !DB_NAME) {
   throw new Error("Database environment variables are missing");
 }
 
-const uri = `mongodb+srv://${DB_USER}:${DB_PASS}@cluster0.pqvcpai.mongodb.net/${DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${DB_USER}:${DB_PASS}@parceldb.bsdwu2t.mongodb.net/${DB_NAME}?retryWrites=true&w=majority&appName=ParcelDB`;
 
 const client = new MongoClient(uri, {
   serverApi: {
