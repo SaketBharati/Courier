@@ -38,7 +38,7 @@ app.use(express.json());
 app.use(
     cors({
         origin: [
-            "https://courier-y93t.onrender.com",
+            "https://courier-vert.vercel.app/",
         ],
         credentials: true,
         optionsSuccessStatus: 200,

@@ -1,6 +1,6 @@
 const allowedOrigins = [
   process.env.CLIENT_URL,
-  "https://courier-y93t.onrender.com",
+  "https://courier-vert.vercel.app/",
 ].filter(Boolean);
 
 const corsOptions = {
