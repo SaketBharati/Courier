@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 // Number of salt rounds for hashing passwords
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
