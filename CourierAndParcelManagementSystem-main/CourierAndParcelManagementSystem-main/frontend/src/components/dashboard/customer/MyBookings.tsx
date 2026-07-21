@@ -19,7 +19,7 @@ const MyBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        // const res = await fetch("http://localhost:5000/parcels/myBooking", {
+        // const res = await fetch("https://courier-y93t.onrender.com/parcels/myBooking", {
         const res = await fetch(`${server}/parcels/myBooking`, {
           headers: {
             Authorization: `Bearer ${token}`,

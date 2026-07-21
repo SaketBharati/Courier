@@ -21,7 +21,7 @@ const AssignedParcels = () => {
   useEffect(() => {
     const fetchParcels = async () => {
       try {
-        // const res = await fetch("http://localhost:5000/agent/assigned", {
+        // const res = await fetch("https://courier-y93t.onrender.com/agent/assigned", {
         const res = await fetch("/parcels.json", {
           headers: { Authorization: `Bearer ${token}` },
         });

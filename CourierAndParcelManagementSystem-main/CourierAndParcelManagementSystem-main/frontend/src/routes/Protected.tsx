@@ -37,7 +37,7 @@ const Protected: React.FC<ProtectedProps> = ({ children }) => {
     if (!refreshToken) return false;
 
     try {
-      const response = await fetch(`http://localhost:5000/refresh`, {
+      const response = await fetch(`https://courier-y93t.onrender.com/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
