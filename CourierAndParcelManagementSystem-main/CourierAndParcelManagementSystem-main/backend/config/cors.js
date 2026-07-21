@@ -1,19 +1,23 @@
-import cors from "cors";
-
-const allowedOrigins = [process.env.CLIENT_URL];
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
+    // Allow requests with no origin (Postman, Render health checks, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
 
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    callback(new Error("Not allowed by CORS"));
+    return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   optionsSuccessStatus: 200,
 };
 
-export default cors(corsOptions);
+export default corsOptions;
