@@ -4,7 +4,7 @@ dotenv.config();
 import express from "express";
 import corsMiddleware from "./config/cors.js";
 
-app.use(corsMiddleware);
+
 
 // =====================================
 // Config
@@ -35,7 +35,7 @@ const app = express();
 // =====================================
 // Global Middlewares
 // =====================================
-
+app.use(corsMiddleware);
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
